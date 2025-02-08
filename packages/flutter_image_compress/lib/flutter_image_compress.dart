@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data' as typed_data;
 
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress_platform_interface/flutter_image_compress_platform_interface.dart';
+import 'package:image/image.dart';
+
 export 'package:flutter_image_compress_platform_interface/flutter_image_compress_platform_interface.dart';
 
 /// Image Compress plugin.
@@ -37,7 +40,7 @@ class FlutterImageCompress {
   }
 
   /// Compress image from [Uint8List] to [Uint8List].
-  static Future<typed_data.Uint8List> compressWithList(
+  static Future<typed_data.Uint8List?> compressWithList(
     typed_data.Uint8List image, {
     int minWidth = 1920,
     int minHeight = 1080,
@@ -48,6 +51,13 @@ class FlutterImageCompress {
     CompressFormat format = CompressFormat.jpeg,
     bool keepExif = false,
   }) async {
+    if (defaultTargetPlatform == TargetPlatform.windows) {
+      final imageLib = decodeImage(image);
+      if (imageLib == null) {
+        return null;
+      }
+      return Uint8List.fromList(encodeJpg(imageLib, quality: quality));
+    }
     return _platform.compressWithList(
       image,
       minWidth: minWidth,
@@ -74,6 +84,14 @@ class FlutterImageCompress {
     bool keepExif = false,
     int numberOfRetries = 5,
   }) async {
+    if (defaultTargetPlatform == TargetPlatform.windows) {
+      final imageBytes = await File(path).readAsBytes();
+      final imageLib = decodeImage(Uint8List.fromList(imageBytes));
+      if (imageLib == null) {
+        return null;
+      }
+      return Uint8List.fromList(encodeJpg(imageLib, quality: quality));
+    }
     return _platform.compressWithFile(
       path,
       minWidth: minWidth,
