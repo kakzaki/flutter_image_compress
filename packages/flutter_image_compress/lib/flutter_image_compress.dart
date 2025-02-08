@@ -40,7 +40,7 @@ class FlutterImageCompress {
   }
 
   /// Compress image from [Uint8List] to [Uint8List].
-  static Future<typed_data.Uint8List?> compressWithList(
+  static Future<typed_data.Uint8List> compressWithList(
     typed_data.Uint8List image, {
     int minWidth = 1920,
     int minHeight = 1080,
@@ -54,7 +54,7 @@ class FlutterImageCompress {
     if (defaultTargetPlatform == TargetPlatform.windows) {
       final imageLib = decodeImage(image);
       if (imageLib == null) {
-        return null;
+        return image;
       }
       return Uint8List.fromList(encodeJpg(imageLib, quality: quality));
     }
